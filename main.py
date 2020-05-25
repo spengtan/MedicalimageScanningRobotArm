@@ -12,7 +12,7 @@ import vrepInterface
 #MAX_EPISODES = 900
 MAX_EPISODES = 900
 #MAX_EP_STEPS = 200
-MAX_EP_STEPS = 200
+MAX_EP_STEPS = 100
 ON_TRAIN = True
 
 # set env
@@ -53,7 +53,7 @@ def train():
             if rl.memory_full:
                 # start to learn once has fulfilled the memory
                 rl.learn()
-                print('start to learn')
+                # print('start to learn')
 
             s = s_
             if done or j == MAX_EP_STEPS-1:
@@ -65,11 +65,14 @@ def train():
 
 def eval():
     rl.restore()
-    env.render()
-    env.viewer.set_vsync(True)
+    vrepInterface.connect()
+    vrepInterface.start()
+    # env.render()
+    # env.viewer.set_vsync(True)
+    env.get_goal()
     s = env.reset()
     while True:
-        env.render()
+        # env.render()
         a = rl.choose_action(s)
         s, r, done = env.step(a)
 

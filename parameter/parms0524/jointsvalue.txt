@@ -1,0 +1,6 @@
+        joint1_angle = np.pi
+        joint2_angle = self.actual_angle[0]
+        joint3_angle = self.actual_angle[1]
+        joint4_angle = 0
+        joint5_angle = -np.pi / 2
+        joint6_angle = 0

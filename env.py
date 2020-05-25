@@ -8,13 +8,13 @@ import time
 class ArmEnv(object):
     #viewer = None
 
-    dt = .1    # refresh rate
+    dt = .05    # refresh rate
     action_bound = [-1, 1]
 
     goal = {'x': 0., 'y': 0., 'z': 0., 'r': 0}
 
     state_dim = 43
-    action_dim = 6
+    action_dim = 3
 
     def __init__(self):
         # self.arm_info = np.zeros(
@@ -22,7 +22,7 @@ class ArmEnv(object):
         # self.arm_info['l'] = 100        # 2 arms length
         # self.arm_info['r'] = np.pi/6    # 2 angles information
 
-        self.actual_angle = np.zeros(6, dtype=np.float)
+        self.actual_angle = np.zeros(3, dtype=np.float)
         self.on_goal = 0
 
     # def start(self, i):
@@ -39,17 +39,48 @@ class ArmEnv(object):
     def step(self, action):
         done = False
         action = np.clip(action, *self.action_bound)
+        # print('action: ', action)
         self.actual_angle += action*self.dt
-        self.actual_angle %= np.pi*2
+        # print('angle: ', self.actual_angle)
+
+        # for i in range(3):
+        #     if self.actual_angle[i] >= 0:
+        #         self.actual_angle[i] %= np.pi*2
+        #     else:
+        #         self.actual_angle[i] %= (-np.pi*2)
+
+        for i in range(3):
+            if self.actual_angle[i] >= 0:
+                self.actual_angle[i] %= np.pi*2
+            else:
+                self.actual_angle[i] %= (-np.pi*2)
+
+        # print('actual angle: ', self.actual_angle)
+
+        # self.actual_angle %= np.pi*2
+
+        # joint1_angle = self.actual_angle[0]
+        # joint2_angle = self.actual_angle[1]
+        # joint3_angle = self.actual_angle[2]
+        # joint4_angle = self.actual_angle[3]
+        # joint5_angle = self.actual_angle[4]
+        # joint6_angle = self.actual_angle[5]
+
+        # --------params0524----------------
+        # joint1_angle = np.pi
+        # joint2_angle = self.actual_angle[0]
+        # joint3_angle = self.actual_angle[1]
+        # joint4_angle = 0
+        # joint5_angle = -np.pi / 2
+        # joint6_angle = 0
+        # ----------------------------------
 
         joint1_angle = self.actual_angle[0]
         joint2_angle = self.actual_angle[1]
         joint3_angle = self.actual_angle[2]
-        joint4_angle = self.actual_angle[3]
-        joint5_angle = self.actual_angle[4]
-        joint6_angle = self.actual_angle[5]
-
-
+        joint4_angle = 0
+        joint5_angle = -np.pi / 2
+        joint6_angle = 0
 
         vrepInterface.move_joints(joint1_angle, joint2_angle, joint3_angle, joint4_angle, joint5_angle, joint6_angle)
         time.sleep(1)
@@ -127,13 +158,13 @@ class ArmEnv(object):
         #     self.on_goal = 0
 
 
-        if 0 < fingerxyz[2] - self.goal['z'] < 0.41 and -0.72 < fingerxyz[0] - self.goal['x'] < 0 and 0 < fingerxyz[1] - self.goal['y'] < 1.03:
+        if 0 < fingerxyz[2] - self.goal['z'] < 0.50 and -0.50 < fingerxyz[0] - self.goal['x'] < 0 and 0 < fingerxyz[1] - self.goal['y'] < 0.50:
 
-            if fingerxyz[2] - self.goal['z'] < 0.05 and fingerxyz[0] - self.goal['x'] < 0.05 and fingerxyz[1] - self.goal['y'] < 0.05:
+            if fingerxyz[2] - self.goal['z'] < 0.05 and -0.05 < fingerxyz[0] - self.goal['x'] and fingerxyz[1] - self.goal['y'] < 0.05:
 
                 r += 1.
                 self.on_goal += 1
-                if self.on_goal > 50:
+                if self.on_goal > 20:
                     done = True
 
             else:
@@ -154,11 +185,15 @@ class ArmEnv(object):
         return s, r, done
 
     def reset(self):
-        self.goal['x'] = np.random.uniform(0, 0.3)
-        self.goal['y'] = np.random.uniform(-0.75, -0.45)
+        self.goal['x'] = np.random.uniform(0.15, 0.35)
+        self.goal['y'] = np.random.uniform(-0.37, -0.17)
         #self.goal['z'] is constant
 
-        self.actual_angle = 2*np.pi*np.random.rand(6)
+        # self.actual_angle = 2*np.pi*np.random.rand(3)
+        self.actual_angle[0] = np.pi
+        self.actual_angle[1] = np.pi/6
+        self.actual_angle[2] = np.pi/6
+
         # self.arm_info['r'] = 2 * np.pi * np.random.rand(2)
         # self.on_goal = 0
         # (a1l, a2l) = self.arm_info['l']  # radius, arm length
@@ -166,12 +201,30 @@ class ArmEnv(object):
         # a1xy = np.array([200., 200.])  # a1 start (x0, y0)
         # a1xy_ = np.array([np.cos(a1r), np.sin(a1r)]) * a1l + a1xy  # a1 end and a2 start (x1, y1)
         # finger = np.array([np.cos(a1r + a2r), np.sin(a1r + a2r)]) * a2l + a1xy_  # a2 end (x2, y2)
+
+        # joint1_angle = self.actual_angle[0]
+        # joint2_angle = self.actual_angle[1]
+        # joint3_angle = self.actual_angle[2]
+        # joint4_angle = self.actual_angle[3]
+        # joint5_angle = self.actual_angle[4]
+        # joint6_angle = self.actual_angle[5]
+
+        # --------params0524----------------
+        # joint1_angle = np.pi
+        # joint2_angle = self.actual_angle[0]
+        # joint3_angle = self.actual_angle[1]
+        # joint4_angle = 0
+        # joint5_angle = -np.pi / 2
+        # joint6_angle = 0
+        # ----------------------------------
+
         joint1_angle = self.actual_angle[0]
         joint2_angle = self.actual_angle[1]
         joint3_angle = self.actual_angle[2]
-        joint4_angle = self.actual_angle[3]
-        joint5_angle = self.actual_angle[4]
-        joint6_angle = self.actual_angle[5]
+        joint4_angle = 0
+        joint5_angle = -np.pi / 2
+        joint6_angle = 0
+
 
         vrepInterface.move_joints(joint1_angle, joint2_angle, joint3_angle, joint4_angle, joint5_angle, joint6_angle)
         time.sleep(1)
